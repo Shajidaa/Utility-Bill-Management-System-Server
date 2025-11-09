@@ -111,6 +111,26 @@ async function run() {
       const result = await myBillsCollection.insertOne(newBills);
       res.send(result);
     });
+    // ********* my bills Update ***********/
+    app.patch("/add-bills/:id", verifyFireBaseToken, async (req, res) => {
+      const id = req.params.id;
+      const updateBill = req.body;
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: {
+          amount: updateBill.amount,
+          address: updateBill.address,
+          date: updateBill.date,
+          phone: updateBill.phone,
+        },
+      };
+      console.log(update);
+
+      const result = await myBillsCollection.updateOne(query, update);
+      res.send(result);
+    });
+    // ********* my bills delete ***********/
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
