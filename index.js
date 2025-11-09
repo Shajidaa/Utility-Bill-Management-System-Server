@@ -31,9 +31,10 @@ async function run() {
 
     const myDb = client.db("management_db");
     const billsCollection = myDb.collection("bills");
+    const myBillsCollection = myDb.collection("bills");
 
     // *********  bills apis ***********/
-    app.get("/allBills", async (req, res) => {
+    app.get("/bills", async (req, res) => {
       const cursor = billsCollection.find();
       const result = await cursor.toArray();
       res.send(result);
