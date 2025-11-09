@@ -1,9 +1,38 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const admin = require("firebase-admin");
 require("dotenv").config();
+
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 3000;
+
+const decoded = Buffer.from(
+  process.env.FIREBASE_SERVICE_KEY,
+  "base64"
+).toString("utf8");
+const serviceAccount = JSON.parse(decoded);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const verifyFireBaseToken = async (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  const token = authorization.split(" ")[1];
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+
+    console.log("inside token", decoded);
+    req.token_email = decoded.email;
+    next();
+  } catch (error) {
+    return res.status(401).send({ message: "unauthorized" });
+  }
+};
 
 //middleware
 app.use(cors());
@@ -31,7 +60,7 @@ async function run() {
 
     const myDb = client.db("management_db");
     const billsCollection = myDb.collection("bills");
-    const myBillsCollection = myDb.collection("bills");
+    const myBillsCollection = myDb.collection("myBills");
 
     // *********  bills apis ***********/
     app.get("/bills", async (req, res) => {
@@ -51,6 +80,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await billsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // ********* my bills  ***********/
+    // ********* my bills create ***********/
+    app.post("/add-bills", verifyFireBaseToken, async (req, res) => {
+      const newBills = req.body;
+      const result = await myBillsCollection.insertOne(newBills);
       res.send(result);
     });
     // Send a ping to confirm a successful connection
