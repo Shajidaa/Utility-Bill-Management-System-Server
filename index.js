@@ -84,6 +84,20 @@ async function run() {
     });
 
     // ********* my bills  ***********/
+    app.get("/add-bills", verifyFireBaseToken, async (req, res) => {
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.email = email;
+        if (email !== req.token_email) {
+          return res.status(403).send({ message: "forbidden message" });
+        }
+      }
+      const cursor = myBillsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // ********* my bills create ***********/
     app.post("/add-bills", verifyFireBaseToken, async (req, res) => {
       const newBills = req.body;
