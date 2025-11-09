@@ -64,8 +64,15 @@ async function run() {
 
     // *********  bills apis ***********/
     app.get("/bills", async (req, res) => {
-      const cursor = billsCollection.find();
+      const cursor = billsCollection.find().sort({ date: -1 });
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // *********  bills create  ***********/
+    app.post("/bills", verifyFireBaseToken, async (req, res) => {
+      const newBill = req.body;
+      const result = await billsCollection.insertOne(newBill);
       res.send(result);
     });
     // ********* recent bills  ***********/
