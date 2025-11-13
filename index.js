@@ -23,6 +23,8 @@ const verifyFireBaseToken = async (req, res, next) => {
     return res.status(401).send({ message: "unauthorized access" });
   }
   const token = authorization.split(" ")[1];
+  console.log(token);
+
   try {
     const decoded = await admin.auth().verifyIdToken(token);
 
@@ -30,12 +32,18 @@ const verifyFireBaseToken = async (req, res, next) => {
     req.token_email = decoded.email;
     next();
   } catch (error) {
+    console.log(error);
+
     return res.status(401).send({ message: "unauthorized" });
   }
 };
 
 //middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://payup-1204c.web.app"],
+  })
+);
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -56,7 +64,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const myDb = client.db("management_db");
     const billsCollection = myDb.collection("bills");
